@@ -19,12 +19,14 @@ def update_chart_data(humidity, timestamp):
 
 @routes.route('/', methods=['POST', 'GET'])
 def index():
+    global target_humidity
     if request.method == 'POST':
-        global target_humidity
-        target_humidity = request.form['target_humidity']
+        data = request.json
+        if data and 'target_humidity' in data:
+            target_humidity = data['target_humidity']
         return redirect('/')
-    else:
-        return render_template('index.html')
+    return render_template('index.html')
+
 
 
 @routes.route('/api/data/', methods=['GET'])
@@ -39,7 +41,15 @@ def test_data():
     try:
         rows = db.session.query(HData).order_by(HData.id.desc()).limit(50).all()
         data = [{'id': row.id, 'humidity': row.humidity, 'time': row.time} for row in rows]
-        return jsonify(data, target_humidity)
+        return jsonify(data, target_humidity), 200
+    except Exception as e:
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+    
+
+@routes.route('/api/get_target/', methods=['GET'])
+def get_target():
+    try:
+        return jsonify({'target': target_humidity})
     except Exception as e:
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 

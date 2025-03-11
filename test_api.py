@@ -32,3 +32,24 @@ def test_post_valid_data(client):
     response = client.post('/api/get_readings/', json={'humidity': 80})
     assert response.status_code == 200
     assert response.json['message'] == 'Data received successfully'
+
+
+def test_post_target(client):
+    response = client.post('/', json={'target_humidity': 100})
+    assert response.status_code == 302
+
+
+def test_post_target_no_data(client):
+    response = client.post('/', json={})
+    assert response.status_code == 302
+
+
+def test_get_index(client):
+    response = client.get('/')
+    assert response.status_code == 200
+    
+
+def test_get_target(client):
+    response = client.get('/api/get_target/')
+    assert response.status_code == 200
+    assert isinstance(response.json['target'], int)
