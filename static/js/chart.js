@@ -31,13 +31,7 @@ async function createChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: {
-                    min: 0,
-                    max: 100,
-                    ticks: {
-                        stepSize: 10
-                    }
-                }
+                y: {beginAtZero: true, max: 100}
             },
             plugins: {
                 legend: {
