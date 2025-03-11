@@ -21,9 +21,12 @@ def update_chart_data(humidity, timestamp):
 def index():
     global target_humidity
     if request.method == 'POST':
-        data = request.json
-        if data and 'target_humidity' in data:
-            target_humidity = data['target_humidity']
+        if request.is_json:
+            data = request.json
+            if data and 'target_humidity' in data:
+                target_humidity = data['target_humidity']
+        else:
+            target_humidity = request.form.get('target_humidity')
         return redirect('/')
     return render_template('index.html')
 
