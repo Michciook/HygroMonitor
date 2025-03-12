@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request, redirect
-from models import db, HData
+from models import db, HData, TData
 import datetime
 
 routes = Blueprint('routes', __name__)
@@ -7,7 +7,6 @@ routes = Blueprint('routes', __name__)
 values = [0] * 20
 labels = [1] * 20
 
-target_humidity = 0
 
 
 def update_chart_data(humidity, timestamp):
@@ -19,14 +18,23 @@ def update_chart_data(humidity, timestamp):
 
 @routes.route('/', methods=['POST', 'GET'])
 def index():
-    global target_humidity
     if request.method == 'POST':
         if request.is_json:
             data = request.json
             if data and 'target_humidity' in data:
-                target_humidity = data['target_humidity']
+                try:
+                    new_data = TData(target_humidity=data['target_humidity'])
+                    db.session.add(new_data)
+                    db.session.commit()
+                except Exception as e:
+                    return jsonify({'error': f'Server error: {str(e)}'}), 500
         else:
-            target_humidity = request.form.get('target_humidity')
+            try:
+                new_data = TData(target_humidity=request.form.get('target_humidity'))
+                db.session.add(new_data)
+                db.session.commit()
+            except Exception as e:
+                    return jsonify({'error': f'Server error: {str(e)}'}), 500
         return redirect('/')
     return render_template('index.html')
 
@@ -44,7 +52,9 @@ def test_data():
     try:
         rows = db.session.query(HData).order_by(HData.id.desc()).limit(50).all()
         data = [{'id': row.id, 'humidity': row.humidity, 'time': row.time} for row in rows]
-        return jsonify(data, target_humidity), 200
+        t_h = db.session.query(TData).order_by(TData.id.desc()).limit(10).all()
+        t_data = [{'id': row.id, 'target_humidity': row.target_humidity} for row in t_h]
+        return jsonify(data, t_data), 200
     except Exception as e:
         return jsonify({'error': f'Server error: {str(e)}'}), 500
     
@@ -52,7 +62,8 @@ def test_data():
 @routes.route('/api/get_target/', methods=['GET'])
 def get_target():
     try:
-        return jsonify({'target': target_humidity})
+        latest_record = db.session.query(TData).order_by(TData.id.desc()).first()
+        return jsonify({'target': latest_record.target_humidity})
     except Exception as e:
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
