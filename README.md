@@ -37,7 +37,7 @@ This is a Flask-based web API for monitoring humidity levels. The application pr
 
 1. Clone the repository:
    ```sh
-   git clone HygroMonitor
+   git clone https://github.com/Michciook/HygroMonitor.git
    cd HygroMonitor
    ```
 2. Create a virtual environment and activate it:
