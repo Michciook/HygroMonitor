@@ -15,4 +15,4 @@ app.register_blueprint(routes)
 if __name__ == '__main__':
     with app.app_context():
         get_db_data()
-    app.run(port=8000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
